@@ -1,10 +1,12 @@
+const chalk = require(`chalk`);
+
 const {
   getRandomInt,
   shuffle,
   getPictureFileName,
 } = require(`../../utils`);
 
-const fs = require(`fs`);
+const fs = require(`fs/promises`);
 
 const DEFAULT_COUNT = 1;
 const FILE_NAME = `mocks.json`;
@@ -66,17 +68,16 @@ const generateOffers = (count) => (
 
 module.exports = {
   name: `--generate`,
-  run(args) {
+  async run(args) {
     const [count] = args;
     const countOffer = Number.parseInt(count, 10) || DEFAULT_COUNT;
     const content = JSON.stringify(generateOffers(countOffer));
 
-    fs.writeFile(FILE_NAME, content, (err) => {
-      if (err) {
-        console.error(`Произошла ошибка записи файла ${FILE_NAME}, ошибка: ${err}`);
-      }
-
-      return console.info(`Запись в файл успешно завершена`);
-    });
+    try {
+      await fs.writeFile(FILE_NAME, content);
+      console.info(chalk.green(`Запись в файл успешно завершена`));
+    } catch (err) {
+      console.error(chalk.red(`Произошла ошибка записи файла ${FILE_NAME}, ошибка: ${err}`));
+    }
   }
 };
