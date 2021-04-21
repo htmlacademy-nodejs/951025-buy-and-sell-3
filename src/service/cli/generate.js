@@ -37,7 +37,6 @@ const generateOffers = (count, titles, categories, sentences) => (
 
 const readContent = async (filePath) => {
   try {
-    console.log(`Current directory: ${process.cwd()}`);
     const content = await fs.readFile(filePath, `utf-8`);
     return content.split(`\n`);
   } catch (err) {
