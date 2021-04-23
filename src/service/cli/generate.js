@@ -24,13 +24,13 @@ const PriceRange = {
   MAX: 10000,
 };
 
-const generateOffers = (count, titles, categories, sentences) => (
+const generateOffers = (count, contentType) => (
   Array(count).fill({}).map(() => ({
-    category: [categories[getRandomInt(0, categories.length - 1)]],
-    description: shuffle(sentences).slice(1, 5).join(` `),
+    category: [contentType.categories[getRandomInt(0, contentType.categories.length - 1)]],
+    description: shuffle(contentType.sentences).slice(1, 5).join(` `),
     picture: getPictureFileName(getRandomInt(0, 16), getRandomInt),
     sum: getRandomInt(PriceRange.MIN, PriceRange.MAX),
-    title: titles[getRandomInt(0, titles.length - 1)],
+    title: contentType.titles[getRandomInt(0, contentType.titles.length - 1)],
     type: OfferType[Object.keys(OfferType)[getRandomInt(0, Object.keys(OfferType).length - 1)]]
   }))
 );
@@ -38,7 +38,7 @@ const generateOffers = (count, titles, categories, sentences) => (
 const readContent = async (filePath) => {
   try {
     const content = await fs.readFile(filePath, `utf-8`);
-    return content.split(`\n`);
+    return content.split(`\n`).map((item) => item.trim()).filter((item) => item !== ``);
   } catch (err) {
     console.error(chalk.red(`File can't be read, ${err}`));
     return [];
@@ -48,12 +48,19 @@ const readContent = async (filePath) => {
 module.exports = {
   name: `--generate`,
   async run(args) {
-    const sentences = await readContent(FILE_SENTENCES_PATH);
-    const titles = await readContent(FILE_TITLES_PATH);
-    const categories = await readContent(FILE_CATEGORIES_PATH);
+    const [sentences, titles, categories] = await Promise.all([
+      readContent(FILE_SENTENCES_PATH),
+      readContent(FILE_TITLES_PATH),
+      readContent(FILE_CATEGORIES_PATH)
+    ]);
+
+    const contentType = {
+      sentences, titles, categories
+    };
+
     const [count] = args;
     const countOffer = Number.parseInt(count, 10) || DEFAULT_COUNT;
-    const content = JSON.stringify(generateOffers(countOffer, titles, categories, sentences));
+    const content = JSON.stringify(generateOffers(countOffer, contentType));
 
     try {
       await fs.writeFile(FILE_NAME, content);
