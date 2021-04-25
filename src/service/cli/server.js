@@ -2,8 +2,9 @@ const {HttpCode, DEFAULT_PORT} = require(`../../const`);
 const chalk = require(`chalk`);
 const fs = require(`fs/promises`);
 const http = require(`http`);
+const path = require(`path`);
 
-const FILE_NAME = `mocks.json`;
+const FILE_NAME = path.join(__dirname, `../mocks.json`);
 
 const sendResponse = (res, statusCode, message) => {
   const template = `
