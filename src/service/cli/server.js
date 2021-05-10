@@ -1,51 +1,25 @@
 const {HttpCode, DEFAULT_PORT} = require(`../../const`);
 const chalk = require(`chalk`);
-const fs = require(`fs/promises`);
-const http = require(`http`);
+const express = require(`express`);
+const fs = require(`fs`);
 const path = require(`path`);
 
 const FILE_NAME = path.join(__dirname, `../mocks.json`);
+const NOT_FOUND_MESSAGE = `Not found`;
 
-const sendResponse = (res, statusCode, message) => {
-  const template = `
-    <!Doctype html>
-      <html lang="ru">
-      <head>
-        <title>Объявления</title>
-      </head>
-      <body>${message}</body>
-    </html>`.trim();
+const app = express();
+app.use(express.json());
+const offersRouter = new express.Router();
 
-  res.status = statusCode;
-
-  res.writeHead(statusCode, {
-    'Content-Type': `text/html; charset=UTF-8`,
-  });
-
-  res.end(template);
-};
-
-const onClientConnect = async (req, res) => {
-  const notFoundMessageText = `Not Found`;
-
-  switch (req.url) {
-    case `/`:
-      try {
-        const fileContent = await fs.readFile(FILE_NAME, `utf-8`);
-        const mocks = JSON.parse(fileContent);
-        const message = mocks.map((post) => `<li>${post.title}</li>`).join(``);
-        sendResponse(res, HttpCode.OK, `<ul>${message}</ul>`);
-      } catch (err) {
-        sendResponse(res, HttpCode.NOT_FOUND, notFoundMessageText);
-      }
-
-      break;
-    default:
-      sendResponse(res, HttpCode.NOT_FOUND, notFoundMessageText);
-      break;
+offersRouter.get(`/offers`, async (req, res) => {
+  try {
+    const fileContent = await fs.promises.readFile(FILE_NAME);
+    const mocks = JSON.parse(fileContent);
+    res.send(mocks);
+  } catch (err) {
+    res.send([]);
   }
-};
-
+});
 
 module.exports = {
   name: `--server`,
@@ -53,17 +27,18 @@ module.exports = {
     const [customPort] = args;
     const port = parseInt(customPort, 10) || DEFAULT_PORT;
 
-    http.createServer(onClientConnect)
-      .listen(port)
-      .on(`listening`, (err) => {
-        if (err) {
-          return console.error(`Ошибка при создании сервера`, err);
-        }
+    app.use(offersRouter);
 
-        return console.info(chalk.green(`Ожидаю соединений на ${port}`));
-      })
-      .on(`connection`, () => {
-        return console.info(chalk.green(`Соединение установлено`));
-      });
+    app.use((req, res) => res
+      .status(HttpCode.NOT_FOUND)
+      .send(NOT_FOUND_MESSAGE));
+
+    app.listen(port, (err) => {
+      if (err) {
+        console.error(chalk.red(`Error is occured while server creation: ${err}`));
+      }
+
+      console.log(chalk.green(`Server is successfully started on port: ${port}`));
+    });
   }
 };
