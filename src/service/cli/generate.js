@@ -1,6 +1,9 @@
 const chalk = require(`chalk`);
 const fs = require(`fs/promises`);
 const path = require(`path`);
+import {MAX_ID_LENGTH} from '../../const';
+import {nanoid} from 'nanoid';
+
 
 const {
   getRandomInt,
@@ -26,6 +29,7 @@ const PriceRange = {
 
 const generateOffers = (count, contentType) => (
   Array(count).fill({}).map(() => ({
+    id: nanoid(MAX_ID_LENGTH),
     category: [contentType.categories[getRandomInt(0, contentType.categories.length - 1)]],
     description: shuffle(contentType.sentences).slice(1, 5).join(` `),
     picture: getPictureFileName(getRandomInt(0, 16), getRandomInt),
