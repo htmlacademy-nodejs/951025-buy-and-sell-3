@@ -1,5 +1,5 @@
 const {nanoid} = require(`nanoid`);
-const {MAX_ID_LENGTH} = require(`../../constants`);
+const {MAX_ID_LENGTH} = require(`../../const`);
 
 class CommentService {
   create(offer, comment) {

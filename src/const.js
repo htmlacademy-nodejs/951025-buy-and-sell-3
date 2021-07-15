@@ -18,11 +18,14 @@ const HttpCode = {
   BAD_REQUEST: 400,
 };
 
+const API_PREFIX = `/api`;
+
 module.exports = {
   DEFAULT_COMMAND,
   USER_ARGV_INDEX,
   ExitCode,
   HttpCode,
   DEFAULT_PORT,
-  MAX_ID_LENGTH
+  MAX_ID_LENGTH,
+  API_PREFIX,
 };
