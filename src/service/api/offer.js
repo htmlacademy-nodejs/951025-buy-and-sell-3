@@ -72,7 +72,7 @@ module.exports = (app, offerService, commentService) => {
     return res.status(HttpCode.CREATED).json(comment);
   });
 
-  route.delete(`/:offerId/comments`, offerExists(offerService), (req, res) => {
+  route.delete(`/:offerId/comments/:commentId`, offerExists(offerService), (req, res) => {
     const {offer} = res.locals;
     const {commentId} = req.params;
     const deletedComment = commentService.drop(offer, commentId);
