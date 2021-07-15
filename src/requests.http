@@ -1,0 +1,72 @@
+# Возвращает список объявлений
+GET http://localhost:6001/api/offers HTTP/1.1
+
+###
+
+# Возвращает объявление по идентификатору /:offerId
+GET http://localhost:6001/api/offers/91mmdUjM HTTP/1.1
+
+###
+
+# Создает новое объявление
+POST http://localhost:6001/api/offers HTTP/1.1
+Content-Type: application/json
+
+{
+  "category": ["Разное"],
+  "description": ["Прекрасная кофеварка для дома."],
+  "picture": "item04.jpg",
+  "sum": 1240,
+  "title": "Новая кофеварка.",
+  "type": "offer"
+}
+
+###
+
+# Удаляет объявление по идентификатору /:offerId
+DELETE http://localhost:6001/api/offers/91mmdUjM HTTP/1.1
+
+###
+
+# Обновляет объявление
+PUT http://localhost:6001/api/offers/BNFq8iZ4 HTTP/1.1
+Content-Type: application/json
+
+{
+  "category": ["Разное"],
+  "description": ["Прекрасная кофеварка для дома."],
+  "picture": "item04.jpg",
+  "sum": 20240,
+  "title": "Новая кофеварка.",
+  "type": "offer"
+}
+
+###
+
+# Возвращает список категорий
+GET http://localhost:6001/api/categories HTTP/1.1
+
+###
+
+# Поиск объявления по заголовку
+GET http://localhost:6001/api/search?query=«Мурзилка» HTTP/1.1
+
+###
+
+# Возвращает список комментариев
+GET http://localhost:6001/api/offers/DSXjBv64/comments HTTP/1.1
+
+###
+
+# Удаляет комментарий по идентификатору /:commentId из определенной публикации
+DELETE http://localhost:6001/api/offers/DSXjBv64/comments/YbbUHMeA HTTP/1.1
+
+###
+
+# Добавляет новый комментарий к публикации
+POST http://localhost:6001/api/offers/DSXjBv64/comments HTTP/1.1
+Content-Type: application/json
+
+{
+  "text": "Еще один комментарий"
+}
