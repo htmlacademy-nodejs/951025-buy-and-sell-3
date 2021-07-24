@@ -1,6 +1,6 @@
 const DEFAULT_COMMAND = `--help`;
 const USER_ARGV_INDEX = 2;
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 6001;
 const MAX_ID_LENGTH = 8;
 
 const ExitCode = {

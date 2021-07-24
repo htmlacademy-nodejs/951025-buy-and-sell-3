@@ -29,7 +29,7 @@ DELETE http://localhost:6001/api/offers/91mmdUjM HTTP/1.1
 ###
 
 # Обновляет объявление
-PUT http://localhost:6001/api/offers/BNFq8iZ4 HTTP/1.1
+PUT http://localhost:6001/api/offers/DSXjBv64 HTTP/1.1
 Content-Type: application/json
 
 {

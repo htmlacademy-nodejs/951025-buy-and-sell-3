@@ -7,7 +7,7 @@ let data = null;
 
 const getMockData = async () => {
   if (data !== null) {
-    return Promise.resolve(data);
+    return data;
   }
 
   try {
@@ -15,10 +15,9 @@ const getMockData = async () => {
     data = JSON.parse(fileContent);
   } catch (err) {
     console.log(err);
-    Promise.reject(err);
   }
 
-  return Promise.resolve(data);
+  return data;
 };
 
 module.exports = getMockData;
