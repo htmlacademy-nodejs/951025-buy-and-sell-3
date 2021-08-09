@@ -1,6 +1,9 @@
 const chalk = require(`chalk`);
 const fs = require(`fs/promises`);
 const path = require(`path`);
+const {MAX_ID_LENGTH} = require(`../../const`);
+const {nanoid} = require(`nanoid`);
+
 
 const {
   getRandomInt,
@@ -13,6 +16,8 @@ const FILE_NAME = `mocks.json`;
 const FILE_SENTENCES_PATH = path.join(__dirname, `../../data/sentences.txt`);
 const FILE_CATEGORIES_PATH = path.join(__dirname, `../../data/categories.txt`);
 const FILE_TITLES_PATH = path.join(__dirname, `../../data/titles.txt`);
+const FILE_COMMENTS_PATH = path.join(__dirname, `../../data/comments.txt`);
+const MAX_COMMENTS = 6;
 
 const OfferType = {
   OFFER: `offer`,
@@ -24,9 +29,18 @@ const PriceRange = {
   MAX: 10000,
 };
 
+const generateComments = (count, comments) => (
+  Array(count).fill({}).map(() => ({
+    id: nanoid(MAX_ID_LENGTH),
+    text: shuffle(comments).slice(0, getRandomInt(1, 4)).join(` `),
+  }))
+);
+
 const generateOffers = (count, contentType) => (
   Array(count).fill({}).map(() => ({
+    id: nanoid(MAX_ID_LENGTH),
     category: [contentType.categories[getRandomInt(0, contentType.categories.length - 1)]],
+    comments: generateComments(getRandomInt(1, MAX_COMMENTS), contentType.comments),
     description: shuffle(contentType.sentences).slice(1, 5).join(` `),
     picture: getPictureFileName(getRandomInt(0, 16), getRandomInt),
     sum: getRandomInt(PriceRange.MIN, PriceRange.MAX),
@@ -48,14 +62,15 @@ const readContent = async (filePath) => {
 module.exports = {
   name: `--generate`,
   async run(args) {
-    const [sentences, titles, categories] = await Promise.all([
+    const [sentences, titles, categories, comments] = await Promise.all([
       readContent(FILE_SENTENCES_PATH),
       readContent(FILE_TITLES_PATH),
-      readContent(FILE_CATEGORIES_PATH)
+      readContent(FILE_CATEGORIES_PATH),
+      readContent(FILE_COMMENTS_PATH),
     ]);
 
     const contentType = {
-      sentences, titles, categories
+      sentences, titles, categories, comments
     };
 
     const [count] = args;
