@@ -20,6 +20,11 @@ const HttpCode = {
 
 const API_PREFIX = `/api`;
 
+const Env = {
+  DEVELOPMENT: `development`,
+  PRODUCTION: `production`,
+};
+
 module.exports = {
   DEFAULT_COMMAND,
   USER_ARGV_INDEX,
@@ -28,4 +33,5 @@ module.exports = {
   DEFAULT_PORT,
   MAX_ID_LENGTH,
   API_PREFIX,
+  Env,
 };

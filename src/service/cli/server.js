@@ -28,7 +28,7 @@ app.use((req, res) => {
   logger.error(`Route not found ${req.url}`);
 });
 
-app.use((err) => {
+app.use((err, _req, _res, _next) => {
   logger.error(`An error occured on processing request: ${err.message}`);
 });
 
