@@ -6,120 +6,65 @@ const CommentService = require(`../data-service/comment`);
 const mockData = require(`../../data/mockData`);
 const {HttpCode} = require(`../../const`);
 
-const createAPI = () => {
+const createAPI = (services) => {
   const app = express();
-  const cloneData = JSON.parse(JSON.stringify(mockData));
   app.use(express.json());
-  offer(app, new OfferService(cloneData), new CommentService());
+  offer(app, ...services);
   return app;
 };
 
-describe(`API returns the offers list`, () => {
-  const app = createAPI();
-  let response;
+describe(`Offer`, () => {
+  describe(`API returns the a list of offers`, () => {
+    let app = null;
+    let response = null;
+    let cloneData = null;
 
-  beforeAll(async () => {
-    response = await request(app)
-      .get(`/offers`);
+    beforeEach(async () => {
+      cloneData = JSON.parse(JSON.stringify(mockData));
+      app = createAPI([new OfferService(cloneData), new CommentService()]);
+    });
+
+    test(`Status code 200`, async () => {
+      response = await request(app).get(`/offers`);
+      expect(response.statusCode).toBe(HttpCode.OK);
+    });
+    test(`A list 5 offers`, async () => {
+      response = await request(app).get(`/offers`);
+      expect(response.body.length).toBe(5);
+    });
+    test(`First offer ID is "GIjdijcL"`, async () => {
+      response = await request(app).get(`/offers`);
+      expect(response.body[0].id).toBe(`GIjdijcL`);
+    });
   });
 
-  test(`Returns status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
-  test(`Returns 5 offers list`, () => expect(response.body.length).toBe(5));
-  test(`ID of the first offer is GIjdijcL`, () => expect(response.body[0].id).toBe(`GIjdijcL`));
-});
+  describe(`API returns an offer by ID`, () => {
+    let app = null;
+    let response = null;
+    let cloneData = null;
 
-describe(`API returns an offer with an ID`, () => {
-  const app = createAPI();
-  let response;
+    beforeEach(async () => {
+      cloneData = JSON.parse(JSON.stringify(mockData));
+      app = createAPI([new OfferService(cloneData), new CommentService()]);
+    });
 
-  beforeAll(async () => {
-    response = await request(app)
-      .get(`/offers/GIjdijcL`);
+    test(`Status code 200`, async () => {
+      response = await request(app).get(`/offers/GIjdijcL`);
+      expect(response.statusCode).toBe(HttpCode.OK);
+    });
+    test(`Offer's title is "Куплю породистого кота."`, async () => {
+      response = await request(app).get(`/offers/GIjdijcL`);
+      expect(response.body.title).toBe(`Куплю породистого кота.`);
+    });
   });
 
-  test(`Returns status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
-  test(`Offer's title is "Куплю породистого кота."`, () => expect(response.body.title).toBe(`Куплю породистого кота.`));
-});
+  describe(`API creates an offer`, () => {
+    let app = null;
+    let response = null;
+    let cloneData = null;
+    let offerService = null;
+    let commentService = null;
 
-describe(`API creates an offer. Positive scenario`, () => {
-  const app = createAPI();
-  let response;
-
-  const newOffer = {
-    category: `Категория`,
-    title: `Заголовок`,
-    description: `Описания предложения`,
-    picture: `picture.jpg`,
-    type: `offer`,
-    sum: 100,
-  };
-
-  beforeAll(async () => {
-    response = await request(app)
-      .post(`/offers`)
-      .send(newOffer);
-  });
-
-  test(`Returns status code 201`, () => expect(response.statusCode).toBe(HttpCode.CREATED));
-  test(`Returns created offer`, () => expect(response.body).toEqual(expect.objectContaining(newOffer)));
-  test(`Offers length is changed`, () => request(app).get(`/offers`).expect((res) => expect(res.body.length).toBe(6)));
-});
-
-describe(`API refuses to create an offer with invalid data`, () => {
-  const newOffer = {
-    category: `Категория`,
-    title: `Заголовок`,
-    description: `Описания предложения`,
-    picture: `picture.jpg`,
-    type: `offer`,
-    sum: 100,
-  };
-
-  const app = createAPI();
-
-  test(`Returns status code 400 if one of required property is missed`, async () => {
-    for (const key of Object.keys(newOffer)) {
-      const badOffer = {...newOffer};
-      delete badOffer[key];
-
-      await request(app)
-        .post(`/offers`)
-        .send(badOffer)
-        .expect(HttpCode.BAD_REQUEST);
-    }
-  });
-});
-
-describe(`API changes an offer: positive scenario`, () => {
-  const newOffer = {
-    category: `Категория`,
-    title: `Заголовок`,
-    description: `Описания предложения`,
-    picture: `picture.jpg`,
-    type: `offer`,
-    sum: 100,
-  };
-
-  const app = createAPI();
-  let response;
-
-  beforeAll(async () => {
-    response = await request(app)
-      .put(`/offers/j8gydnqp`)
-      .send(newOffer);
-  });
-
-  test(`Returns status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
-  test(`Returns changed offer`, () => expect(response.body).toEqual(expect.objectContaining(newOffer)));
-  test(`Whether offer is really changed`, () => request(app).get(`/offers/j8gydnqp`).expect((res) => {
-    expect(res.body.title).toBe(`Заголовок`);
-  }));
-});
-
-describe(`API changes an offer: negative scenario`, () => {
-  const app = createAPI();
-
-  test(`API returns 404 status code when trying to change non-existent offer`, () => {
     const newOffer = {
       category: `Категория`,
       title: `Заголовок`,
@@ -129,128 +74,274 @@ describe(`API changes an offer: negative scenario`, () => {
       sum: 100,
     };
 
-    return request(app)
-      .put(`/offers/ID_NOT_EXIST`)
-      .send(newOffer)
-      .expect(HttpCode.NOT_FOUND);
+    beforeEach(async () => {
+      cloneData = JSON.parse(JSON.stringify(mockData));
+      offerService = new OfferService(cloneData);
+      commentService = new CommentService();
+      app = createAPI([offerService, commentService]);
+    });
+
+    test(`Status code 201`, async () => {
+      response = await request(app).post(`/offers`).send(newOffer);
+      expect(response.statusCode).toBe(HttpCode.CREATED);
+    });
+    test(`Created offer is returned`, async () => {
+      response = await request(app).post(`/offers`).send(newOffer);
+      expect(response.body).toEqual(expect.objectContaining(newOffer));
+    });
+    test(`Offer is created`, async () => {
+      response = await request(app).post(`/offers`).send(newOffer);
+      const result = offerService.findOne(response.body.id);
+      expect(result).toMatchObject(response.body);
+    });
   });
 
-  test(`API returns status code 400 when put invalid data`, () => {
-    const invalidOffer = {
+  describe(`API refuses to create an offer with invalid data`, () => {
+    const newOffer = {
       category: `Категория`,
       title: `Заголовок`,
+      description: `Описания предложения`,
       picture: `picture.jpg`,
       type: `offer`,
       sum: 100,
     };
 
-    return request(app)
-      .put(`/offers/j8gydnqp`)
-      .send(invalidOffer)
-      .expect(HttpCode.BAD_REQUEST);
-  });
-});
+    const app = createAPI([new OfferService(mockData), new CommentService()]);
 
-describe(`API deletes an offer`, () => {
-  const app = createAPI();
-  let response;
+    test(`Status code 400 if one of required property is missed`, async () => {
+      for (const key of Object.keys(newOffer)) {
+        const badOffer = {...newOffer};
+        delete badOffer[key];
 
-  beforeAll(async () => {
-    response = await request(app)
-      .delete(`/offers/lzWZcilL`);
-  });
-
-  test(`Returns status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
-  test(`Returns deleted offer`, () => expect(response.body.id).toBe(`lzWZcilL`));
-  test(`Offers length is 4 now`, () => request(app).get(`/offers`).expect((res) => {
-    expect(res.body.length).toBe(4);
-  }));
-  test(`API refuses to delete non-existent offer`, () => {
-    return request(app)
-      .delete(`/offers/DONT_EXIST`)
-      .expect(HttpCode.NOT_FOUND);
-  });
-});
-
-describe(`API returns the list of comments by offer id`, () => {
-  const app = createAPI();
-  let response;
-
-  beforeAll(async () => {
-    response = await request(app)
-      .get(`/offers/GIjdijcL/comments`);
+        await request(app)
+          .post(`/offers`)
+          .send(badOffer)
+          .expect(HttpCode.BAD_REQUEST);
+      }
+    });
   });
 
-  test(`Returns status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
-  test(`Returns the list of 4 comments`, () => expect(response.body.length).toBe(4));
-  test(`First comment id is e4t-pEpN`, () => expect(response.body[0].id).toBe(`e4t-pEpN`));
-});
+  describe(`API changes an offer`, () => {
+    let app = null;
+    let response = null;
+    let cloneData = null;
+    let offerService = null;
+    let commentService = null;
 
-describe(`API creates a comment with valid data`, () => {
-  const app = createAPI();
-  let response;
-  const newComment = {text: `New comment's text.`};
+    const newOffer = {
+      category: `Категория`,
+      title: `Заголовок`,
+      description: `Описания предложения`,
+      picture: `picture.jpg`,
+      type: `offer`,
+      sum: 100,
+    };
 
-  beforeAll(async () => {
-    response = await request(app)
-      .post(`/offers/GIjdijcL/comments`)
-      .send(newComment);
+    beforeEach(async () => {
+      cloneData = JSON.parse(JSON.stringify(mockData));
+      offerService = new OfferService(cloneData);
+      commentService = new CommentService();
+      app = createAPI([offerService, commentService]);
+    });
+
+    test(`Status code 200`, async () => {
+      response = await request(app).put(`/offers/j8gydnqp`).send(newOffer);
+      expect(response.statusCode).toBe(HttpCode.OK);
+    });
+    test(`Changed offer is returned`, async () => {
+      response = await request(app).put(`/offers/j8gydnqp`).send(newOffer);
+      expect(response.body).toEqual(expect.objectContaining(newOffer));
+    });
+    test(`Whether offer is really changed`, async () => {
+      response = await request(app).put(`/offers/j8gydnqp`).send(newOffer);
+      const result = offerService.findOne(response.body.id);
+      expect(result.title).toBe(`Заголовок`);
+    });
   });
 
-  test(`Returns status code 201`, () => expect(response.statusCode).toBe(HttpCode.CREATED));
-  test(`Returns created comment`, () => expect(response.body).toEqual(expect.objectContaining(newComment)));
-  test(`Comments length is changed to 5`, () => request(app).get(`/offers/GIjdijcL/comments`)
-    .expect((res) => expect(res.body.length).toBe(5)));
-});
+  describe(`API refuses to change an offer`, () => {
+    const app = createAPI([new OfferService(mockData), new CommentService()]);
 
-describe(`API refuses to create a comment`, () => {
-  const app = createAPI();
+    test(`Status code 404 if offer doesn't exist`, () => {
+      const newOffer = {
+        category: `Категория`,
+        title: `Заголовок`,
+        description: `Описания предложения`,
+        picture: `picture.jpg`,
+        type: `offer`,
+        sum: 100,
+      };
 
-  test(`The offer doesn't exist`, () => {
-    return request(app)
-      .post(`/offers/NON_EXISTENT_ID/comments`)
-      .send({
-        text: `Comment's text`
-      })
-      .expect(HttpCode.NOT_FOUND);
+      return request(app)
+        .put(`/offers/ID_NOT_EXIST`)
+        .send(newOffer)
+        .expect(HttpCode.NOT_FOUND);
+    });
+
+    test(`Status code 400 when data is invalid`, () => {
+      const invalidOffer = {
+        category: `Категория`,
+        title: `Заголовок`,
+        picture: `picture.jpg`,
+        type: `offer`,
+        sum: 100,
+      };
+
+      return request(app)
+        .put(`/offers/j8gydnqp`)
+        .send(invalidOffer)
+        .expect(HttpCode.BAD_REQUEST);
+    });
   });
 
-  test(`The comment's body is invalid`, () => {
-    return request(app)
-      .post(`/offers/GIjdijcL/comments`)
-      .send({})
-      .expect(HttpCode.BAD_REQUEST);
+  describe(`API deletes an offer`, () => {
+    let app = null;
+    let response = null;
+    let cloneData = null;
+    let offerService = null;
+    let commentService = null;
+
+    beforeEach(async () => {
+      cloneData = JSON.parse(JSON.stringify(mockData));
+      offerService = new OfferService(cloneData);
+      commentService = new CommentService();
+      app = createAPI([offerService, commentService]);
+    });
+
+    test(`Status code 200`, async () => {
+      response = await request(app).delete(`/offers/lzWZcilL`);
+      expect(response.statusCode).toBe(HttpCode.OK);
+    });
+    test(`Deleted offer is returned`, async () => {
+      response = await request(app).delete(`/offers/lzWZcilL`);
+      expect(response.body.id).toBe(`lzWZcilL`);
+    });
+    test(`Offer is deleted`, async () => {
+      response = await request(app).delete(`/offers/lzWZcilL`);
+      const result = offerService.findOne(response.body.id);
+      expect(result).toBe(undefined);
+    });
   });
-});
 
-describe(`API deletes a comment of an offer`, () => {
-  const app = createAPI();
-  let response;
-
-  beforeAll(async () => {
-    response = await request(app)
-      .delete(`/offers/GIjdijcL/comments/IJQ2Drkt`);
+  describe(`API refuses to delete an offer`, () => {
+    const app = createAPI([new OfferService(mockData), new CommentService()]);
+    test(`If offer doesn't exist`, () => {
+      return request(app)
+        .delete(`/offers/DONT_EXIST`)
+        .expect(HttpCode.NOT_FOUND);
+    });
   });
 
-  test(`Returns status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
-  test(`Returns deleted comment`, () => expect(response.body.id).toBe(`IJQ2Drkt`));
-  test(`Comments length is changed to 3`, () => request(app)
-    .get(`/offers/GIjdijcL/comments`)
-    .expect((res) => expect(res.body.length).toBe(3))
-  );
-});
+  describe(`API returns a list of comments by offer ID`, () => {
+    let app = null;
+    let response = null;
+    let cloneData = null;
+    let offerService = null;
+    let commentService = null;
 
-describe(`API refuses to delete a comment`, () => {
-  const app = createAPI();
+    beforeEach(async () => {
+      cloneData = JSON.parse(JSON.stringify(mockData));
+      offerService = new OfferService(cloneData);
+      commentService = new CommentService();
+      app = createAPI([offerService, commentService]);
+    });
 
-  test(`Comment doesn't exist`, () => {
-    return request(app)
-      .delete(`/offers/GIjdijcL/comments/NON_EXISTENT`)
-      .expect(HttpCode.NOT_FOUND);
+    test(`Status code 200`, async () => {
+      response = await request(app).get(`/offers/GIjdijcL/comments`);
+      expect(response.statusCode).toBe(HttpCode.OK);
+    });
+    test(`List of 4 comments`, async () => {
+      response = await request(app).get(`/offers/GIjdijcL/comments`);
+      expect(response.body.length).toBe(4);
+    });
+    test(`First comment id is "e4t-pEpN"`, async () => {
+      response = await request(app).get(`/offers/GIjdijcL/comments`);
+      expect(response.body[0].id).toBe(`e4t-pEpN`);
+    });
   });
-  test(`Offer doesn't exist`, () => {
-    return request(app)
-      .delete(`/offers/NON_EXISTENT/comments/IJQ2Drkt`)
-      .expect(HttpCode.NOT_FOUND);
+
+  describe(`API creates a comment`, () => {
+    let app = null;
+    let response = null;
+    let cloneData = null;
+    let offerService = null;
+    let commentService = null;
+
+    const newComment = {text: `New comment's text.`};
+
+    beforeEach(async () => {
+      cloneData = JSON.parse(JSON.stringify(mockData));
+      offerService = new OfferService(cloneData);
+      commentService = new CommentService();
+      app = createAPI([offerService, commentService]);
+    });
+
+    test(`Status code 201`, async () => {
+      response = await request(app).post(`/offers/GIjdijcL/comments`).send(newComment);
+      expect(response.statusCode).toBe(HttpCode.CREATED);
+    });
+    test(`Created comment is returned`, async () => {
+      response = await request(app).post(`/offers/GIjdijcL/comments`).send(newComment);
+      expect(response.body).toEqual(expect.objectContaining(newComment));
+    });
+  });
+
+  describe(`API refuses to create a comment`, () => {
+    const app = createAPI([new OfferService(mockData), new CommentService()]);
+
+    test(`If offer doesn't exist`, () => {
+      return request(app)
+        .post(`/offers/NON_EXISTENT_ID/comments`)
+        .send({
+          text: `Comment's text`
+        })
+        .expect(HttpCode.NOT_FOUND);
+    });
+
+    test(`If comment's body is invalid`, () => {
+      return request(app)
+        .post(`/offers/GIjdijcL/comments`)
+        .send({})
+        .expect(HttpCode.BAD_REQUEST);
+    });
+  });
+
+  describe(`API deletes a comment of an offer`, () => {
+    let app = null;
+    let response = null;
+    let cloneData = null;
+    let offerService = null;
+    let commentService = null;
+
+    beforeEach(async () => {
+      cloneData = JSON.parse(JSON.stringify(mockData));
+      offerService = new OfferService(cloneData);
+      commentService = new CommentService();
+      app = createAPI([offerService, commentService]);
+    });
+
+    test(`Status code 200`, async () => {
+      response = await request(app).delete(`/offers/GIjdijcL/comments/IJQ2Drkt`);
+      expect(response.statusCode).toBe(HttpCode.OK);
+    });
+    test(`Deleted comment is returned`, async () => {
+      response = await request(app).delete(`/offers/GIjdijcL/comments/IJQ2Drkt`);
+      expect(response.body.id).toBe(`IJQ2Drkt`);
+    });
+  });
+
+  describe(`API refuses to delete a comment`, () => {
+    const app = createAPI([new OfferService(mockData), new CommentService()]);
+
+    test(`If comment doesn't exist`, () => {
+      return request(app)
+        .delete(`/offers/GIjdijcL/comments/NON_EXISTENT`)
+        .expect(HttpCode.NOT_FOUND);
+    });
+    test(`If offer doesn't exist`, () => {
+      return request(app)
+        .delete(`/offers/NON_EXISTENT/comments/IJQ2Drkt`)
+        .expect(HttpCode.NOT_FOUND);
+    });
   });
 });
