@@ -2,24 +2,37 @@ const express = require(`express`);
 const request = require(`supertest`);
 const mockData = require(`../../data/mockData`);
 const category = require(`./category`);
-const DataService = require(`../data-service/category`);
+const CategoryService = require(`../data-service/category`);
 const {HttpCode} = require(`../../const`);
 
-const app = express();
-app.use(express.json());
-category(app, new DataService(mockData));
+const createApi = (services) => {
+  const app = express();
+  app.use(express.json());
+  category(app, ...services);
+  return app;
+};
 
-describe(`API returns category list`, () => {
-  let response;
+describe(`Category`, () => {
+  describe(`API returns a list of categories`, () => {
+    let app = null;
+    let response;
+    let categoryService = null;
 
-  beforeAll(async () => {
-    response = await request(app)
-      .get(`/categories`);
-  });
-
-  test(`Status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
-  test(`Returns list of 4 categories`, () => expect(response.body.length).toBe(4));
-  test(`Returns categories names: "Игры", "Разное", "Книги", "Посуда"`, () => {
-    expect(response.body).toEqual(expect.arrayContaining([`Игры`, `Разное`, `Книги`, `Посуда`]));
+    beforeAll(async () => {
+      categoryService = new CategoryService(mockData);
+      app = createApi([categoryService]);
+    });
+    test(`API returns status code 200`, async () => {
+      response = await request(app).get(`/categories`);
+      expect(response.statusCode).toBe(HttpCode.OK);
+    });
+    test(`API returns a list of 4 categories`, async () => {
+      response = await request(app).get(`/categories`);
+      expect(response.body.length).toBe(4);
+    });
+    test(`Returns categories names: "Игры", "Разное", "Книги", "Посуда"`, async () => {
+      response = await request(app).get(`/categories`);
+      expect(response.body).toEqual(expect.arrayContaining([`Игры`, `Разное`, `Книги`, `Посуда`]));
+    });
   });
 });
