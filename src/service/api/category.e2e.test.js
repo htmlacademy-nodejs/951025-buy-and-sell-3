@@ -18,19 +18,19 @@ describe(`Category`, () => {
     let response;
     let categoryService = null;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
       categoryService = new CategoryService(mockData);
       app = createApi([categoryService]);
     });
-    test(`API returns status code 200`, async () => {
+    test(`Status code 200`, async () => {
       response = await request(app).get(`/categories`);
       expect(response.statusCode).toBe(HttpCode.OK);
     });
-    test(`API returns a list of 4 categories`, async () => {
+    test(`List of 4 categories`, async () => {
       response = await request(app).get(`/categories`);
       expect(response.body.length).toBe(4);
     });
-    test(`Returns categories names: "Игры", "Разное", "Книги", "Посуда"`, async () => {
+    test(`Categories names: "Игры", "Разное", "Книги", "Посуда"`, async () => {
       response = await request(app).get(`/categories`);
       expect(response.body).toEqual(expect.arrayContaining([`Игры`, `Разное`, `Книги`, `Посуда`]));
     });
