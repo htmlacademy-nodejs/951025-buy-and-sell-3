@@ -4,9 +4,8 @@ const commentValidator = require(`../middlewares/comment-validator`);
 const offerValidator = require(`../middlewares/offer-validator`);
 const offerExists = require(`../middlewares/offer-exists`);
 
-const route = new Router();
-
 module.exports = (app, offerService, commentService) => {
+  const route = new Router();
   app.use(`/offers`, route);
 
   route.get(`/`, async (req, res) => {

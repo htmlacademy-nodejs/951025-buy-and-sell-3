@@ -13,6 +13,7 @@ class OfferService {
     }, offer);
 
     this._offers.push(newOffer);
+    return newOffer;
   }
 
   drop(id) {
