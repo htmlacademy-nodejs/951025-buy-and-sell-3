@@ -16,3 +16,8 @@ build/
 
 # Папка с логами
 src/service/logs
+
+# Папка с загруженными изображениями
+src/express/upload/img/*.*
+
+!src/express/upload/img/.gitkeep
