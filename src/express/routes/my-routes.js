@@ -11,6 +11,13 @@ myRouter.get(`/`, async (req, res) => {
   }
 });
 
-myRouter.get(`/comments`, (req, res) => res.render(`comments`));
+myRouter.get(`/comments`, async (req, res) => {
+  try {
+    const offers = await api.getOffers();
+    res.render(`comments`, {offers: offers.slice(0, 3)});
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 module.exports = myRouter;
