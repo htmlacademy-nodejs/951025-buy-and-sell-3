@@ -1,10 +1,10 @@
 const express = require(`express`);
 const request = require(`supertest`);
 const offer = require(`./offer`);
-const OfferService = require(`../data-service/offer`);
-const CommentService = require(`../data-service/comment`);
-const mockData = require(`../../data/mockData`);
-const {HttpCode} = require(`../../const`);
+const OfferService = require(`../../data-service/offer`);
+const CommentService = require(`../../data-service/comment`);
+const mockData = require(`../../../data/mockData`);
+const {HttpCode} = require(`../../../const`);
 
 const createAPI = (services) => {
   const app = express();

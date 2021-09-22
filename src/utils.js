@@ -21,3 +21,5 @@ module.exports.getPictureFileName = (number, func) => {
     return `item${func(10, 16)}.jpg`;
   }
 };
+
+module.exports.ensureArray = (value) => Array.isArray(value) ? value : [value];
