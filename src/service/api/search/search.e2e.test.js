@@ -1,9 +1,9 @@
 const express = require(`express`);
 const request = require(`supertest`);
 const search = require(`./search`);
-const SearchService = require(`../data-service/search`);
-const mockData = require(`../../data/mockData`);
-const {HttpCode} = require(`../../const`);
+const SearchService = require(`../../data-service/search`);
+const mockData = require(`../../../data/mockData`);
+const {HttpCode} = require(`../../../const`);
 
 const createApi = (services = []) => {
   const app = express();
